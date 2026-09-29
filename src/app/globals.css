@@ -10,6 +10,16 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Shrika Dreams admin palette */
+  --color-navy: #0f1f33;
+  --color-navy-dark: #091525;
+  --color-gold: #c9a24d;
+  --color-gold-light: #e8d5a3;
+  --color-surface: #f7f7f5;
+  --color-ink: #172235;
+  --color-muted: #6b7280;
+  --color-line: #e5e7eb;
 }
 
 @media (prefers-color-scheme: dark) {
