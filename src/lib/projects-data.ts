@@ -27,7 +27,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  *                  sort_order. If your image_type values use a different
  *                  label for the hero shot, update HERO_IMAGE_TYPE below.
  */
-const HERO_IMAGE_TYPE = "hero";
+export const HERO_IMAGE_TYPE = "Hero";
 
 export const PAGE_SIZE = 10;
 
@@ -267,8 +267,8 @@ export async function getProjects(
 
     const items: ProjectListItem[] = projects.map((p: any) => {
       const images = (imagesByProject.get(p.id) ?? []).sort((a, b) => {
-        const aIsHero = (a.image_type ?? "").toLowerCase() === HERO_IMAGE_TYPE;
-        const bIsHero = (b.image_type ?? "").toLowerCase() === HERO_IMAGE_TYPE;
+        const aIsHero = (a.image_type ?? "").toLowerCase() === HERO_IMAGE_TYPE.toLowerCase();
+        const bIsHero = (b.image_type ?? "").toLowerCase() === HERO_IMAGE_TYPE.toLowerCase();
         if (aIsHero && !bIsHero) return -1;
         if (!aIsHero && bIsHero) return 1;
         return (a.sort_order ?? 0) - (b.sort_order ?? 0);
@@ -308,12 +308,37 @@ export async function deleteProjectById(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Remove child rows first so deletion does not depend on whether the
+    // foreign keys were created with ON DELETE CASCADE.
+    const { error: imagesError } = await supabase
+      .from("project_images")
+      .delete()
+      .eq("project_id", id);
+
+    if (imagesError) {
+      return { success: false, error: imagesError.message };
+    }
+
+    const { error: configurationsError } = await supabase
+      .from("project_configurations")
+      .delete()
+      .eq("project_id", id);
+
+    if (configurationsError) {
+      return { success: false, error: configurationsError.message };
+    }
+
     const { error } = await supabase.from("projects").delete().eq("id", id);
+
     if (error) {
       return { success: false, error: error.message };
     }
+
     return { success: true };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
   }
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, MapPin, Contact, PenLine } from "lucide-react";
+import { Building2, MapPin, Contact } from "lucide-react";
 
 const ACTIONS = [
   {
@@ -19,12 +19,6 @@ const ACTIONS = [
     description: "Add a developer partner",
     href: "/dashboard/builders/new",
     icon: Contact,
-  },
-  {
-    label: "Write Blog Post",
-    description: "Publish market insights",
-    href: "/dashboard/blog/new",
-    icon: PenLine,
   },
 ];
 

@@ -64,7 +64,6 @@ export interface ProjectOverviewCounts {
 export interface WebsiteOverviewCounts {
   publishedProjects: number;
   draftProjects: number;
-  publishedBlogs: number;
   newLeadsToday: number;
 }
 
@@ -125,17 +124,16 @@ export async function getWebsiteOverview(
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
-  const [publishedProjects, draftProjects, publishedBlogs, newLeadsToday] =
+  const [publishedProjects, draftProjects, newLeadsToday] =
     await Promise.all([
       safeCount(supabase, "projects", (q) => q.eq("is_published", true)),
       safeCount(supabase, "projects", (q) => q.eq("is_published", false)),
-      safeCount(supabase, "blog_posts", (q) => q.eq("is_published", true)),
       safeCount(supabase, "leads", (q) =>
         q.gte("created_at", startOfToday.toISOString())
       ),
     ]);
 
-  return { publishedProjects, draftProjects, publishedBlogs, newLeadsToday };
+  return { publishedProjects, draftProjects, newLeadsToday };
 }
 
 export async function getRecentLeads(
@@ -146,6 +144,8 @@ export async function getRecentLeads(
     const { data: leads, error } = await supabase
       .from("leads")
       .select("id, name, status, created_at, project_id")
+      // Closed leads live in Leads → Closed Leads, never in the dashboard list.
+      .or("status.is.null,status.not.ilike.%closed%")
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -154,13 +154,17 @@ export async function getRecentLeads(
       return [];
     }
 
-    if (!leads || leads.length === 0) {
+    const openLeads = (leads ?? []).filter(
+      (lead) => String(lead.status ?? "").trim().toLowerCase() !== "closed"
+    );
+
+    if (openLeads.length === 0) {
       return [];
     }
 
     const projectIds = Array.from(
       new Set(
-        leads
+        openLeads
           .map((lead) => lead.project_id)
           .filter((id): id is string => Boolean(id))
       )
@@ -184,7 +188,7 @@ export async function getRecentLeads(
       }
     }
 
-    return leads.map((lead) => ({
+    return openLeads.map((lead) => ({
       id: lead.id as string,
       name: lead.name as string,
       projectName: lead.project_id

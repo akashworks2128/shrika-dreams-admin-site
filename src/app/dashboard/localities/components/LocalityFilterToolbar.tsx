@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Search, RotateCcw, ChevronDown } from "lucide-react";
+import { Search, RotateCcw } from "lucide-react";
+import GoldSelect from "@/app/dashboard/components/form/GoldSelect";
 import type { CityFilterOption } from "@/lib/localities-data";
 
 const STATUSES = ["Published", "Draft"] as const;
@@ -73,7 +74,7 @@ export default function LocalityFilterToolbar({
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search localities..."
-            className="w-full rounded-lg border border-line bg-surface py-2.5 pl-9 pr-3 text-sm outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-amber-300"
+            className="w-full rounded-lg border border-line bg-surface py-2.5 pl-9 pr-3 text-sm text-ink outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-amber-300"
           />
         </div>
 
@@ -120,20 +121,11 @@ function FilterSelect({
   options: { value: string; label: string }[];
 }) {
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full appearance-none rounded-lg border border-line bg-surface py-2.5 pl-3 pr-8 text-sm text-ink outline-none focus:ring-2 focus:ring-amber-300"
-      >
-        <option value="">{placeholder}</option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-    </div>
+    <GoldSelect
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      options={options}
+    />
   );
 }

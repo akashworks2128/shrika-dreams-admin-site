@@ -7,8 +7,9 @@ import type { BuilderSummaryCounts } from "@/lib/builders-data";
 // builders-data.ts.
 export default function BuildersSummaryCards({ counts }: { counts: BuilderSummaryCounts }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
       <StatCard
+        className="col-span-2 sm:col-span-1"
         icon={Contact}
         label="Total Builders"
         value={counts.all}

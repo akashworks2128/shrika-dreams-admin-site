@@ -7,13 +7,13 @@ import type { ProjectListItem } from "@/lib/projects-data";
 import ProjectRowActions from "./ProjectRowActions";
 
 const STATUS_STYLES: Record<string, string> = {
-  Published: "bg-emerald-50 text-emerald-700",
-  Draft: "bg-line/70 text-muted",
+  Published: "border border-gold/25 bg-gold-light/25 text-navy",
+  Draft: "border border-line bg-surface text-muted",
 };
 
 const PROPERTY_TYPE_STYLES: Record<string, string> = {
-  Apartment: "bg-gold-light/50 text-navy",
-  Plot: "bg-navy/10 text-navy",
+  Apartment: "border border-gold/30 bg-gold-light/35 text-navy",
+  Plot: "border border-navy/15 bg-navy/5 text-navy",
 };
 
 function PublishedBadge({ published }: { published: boolean }) {
@@ -24,7 +24,7 @@ function PublishedBadge({ published }: { published: boolean }) {
       }`}
     >
       <span
-        className={`h-1.5 w-1.5 rounded-full ${published ? "bg-emerald-500" : "bg-gray-400"}`}
+        className={`h-1.5 w-1.5 rounded-full ${published ? "bg-gold" : "bg-gray-400"}`}
       />
       {published ? "Published" : "Draft"}
     </span>
@@ -33,10 +33,10 @@ function PublishedBadge({ published }: { published: boolean }) {
 
 function PropertyTypeBadge({ type }: { type: string | null }) {
   if (!type) return <span className="text-muted">—</span>;
-  const style = PROPERTY_TYPE_STYLES[type] ?? "bg-line/70 text-ink";
+  const style = PROPERTY_TYPE_STYLES[type] ?? "border border-line bg-surface text-ink";
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap ${style}`}
+      className={`inline-flex items-center rounded-lg px-3 py-1.5 text-[11px] font-semibold tracking-[0.02em] whitespace-nowrap ${style}`}
     >
       {type}
     </span>
@@ -52,7 +52,7 @@ function ProjectThumbnail({ imageUrl, name }: { imageUrl: string | null; name: s
 
   if (imageUrl && !failed) {
     return (
-      <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-surface">
+      <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-lg bg-surface">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
@@ -65,7 +65,7 @@ function ProjectThumbnail({ imageUrl, name }: { imageUrl: string | null; name: s
   }
 
   return (
-    <div className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-surface">
+    <div className="flex h-10 w-14 shrink-0 items-center justify-center rounded-lg bg-surface">
       <Building2 className="h-5 w-5 text-gray-300" />
     </div>
   );
@@ -119,62 +119,94 @@ export default function ProjectsTable({ items, hasActiveFilters, error }: Projec
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[900px] border-collapse text-left">
+      <table className="w-full min-w-[855px] table-fixed border-collapse text-left">
+        <colgroup>
+          <col className="w-[300px]" />
+          <col className="hidden w-[130px] xl:table-column" />
+          <col className="hidden w-[130px] lg:table-column" />
+          <col className="w-[105px]" />
+          <col className="w-[140px]" />
+          <col className="w-[110px]" />
+          <col className="w-[80px]" />
+          <col className="w-[120px]" />
+        </colgroup>
         <thead>
           <tr className="border-b border-line text-[11px] font-bold uppercase tracking-[0.06em] text-muted">
-            <th className="px-5 py-3 font-bold">Project</th>
-            <th className="px-4 py-3 font-bold">Builder</th>
-            <th className="px-4 py-3 font-bold">Locality</th>
-            <th className="px-4 py-3 font-bold">Property Type</th>
-            <th className="px-4 py-3 font-bold">Price</th>
-            <th className="px-4 py-3 font-bold">Status</th>
-            <th className="px-4 py-3 font-bold">Featured</th>
+            <th className="px-4 py-3 font-bold">Project</th>
+            <th className="hidden px-3 py-3 font-bold xl:table-cell">Builder</th>
+            <th className="hidden px-3 py-3 font-bold lg:table-cell">Locality</th>
+            <th className="px-3 py-3 font-bold">Type</th>
+            <th className="px-3 py-3 font-bold">Price</th>
+            <th className="px-3 py-3 font-bold">Status</th>
+            <th className="px-3 py-3 text-center font-bold">Featured</th>
             <th className="px-4 py-3 text-right font-bold">Actions</th>
           </tr>
         </thead>
         <tbody className="text-sm">
           {items.map((project) => (
-            <tr key={project.id} className="border-b border-line last:border-0">
-              <td className="px-5 py-3">
+            <tr
+              key={project.id}
+              className="border-b border-line transition-colors last:border-0 hover:bg-surface/60"
+            >
+              <td className="px-4 py-2.5">
                 <div className="flex items-center gap-3">
                   <ProjectThumbnail imageUrl={project.imageUrl} name={project.name} />
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-ink">{project.name}</p>
+                    <p className="truncate font-semibold text-ink" title={project.name}>
+                      {project.name}
+                    </p>
+                    {/* Below xl the Builder column is hidden, so show it here. */}
                     {project.builderName && (
-                      <p className="truncate text-xs text-muted">{project.builderName}</p>
+                      <p className="truncate text-xs text-muted xl:hidden">
+                        {project.builderName}
+                      </p>
+                    )}
+                    {project.localityName && (
+                      <p className="truncate text-xs text-muted lg:hidden">
+                        {project.localityName}
+                      </p>
                     )}
                   </div>
                 </div>
               </td>
-              <td className="px-4 py-3 text-ink whitespace-nowrap">
+              <td
+                className="hidden truncate px-3 py-2.5 text-ink xl:table-cell"
+                title={project.builderName ?? undefined}
+              >
                 {project.builderName ?? "—"}
               </td>
-              <td className="px-4 py-3 text-ink whitespace-nowrap">
+              <td
+                className="hidden truncate px-3 py-2.5 text-ink lg:table-cell"
+                title={project.localityName ?? undefined}
+              >
                 {project.localityName ?? "—"}
               </td>
-              <td className="px-4 py-3">
+              <td className="px-3 py-2.5">
                 <PropertyTypeBadge type={project.propertyType} />
               </td>
-              <td className="px-4 py-3 whitespace-nowrap">
-                <p className="font-semibold text-ink">{project.priceLine}</p>
+              <td className="px-2.5 py-2.5">
+                <p className="truncate text-[12px] font-semibold text-ink" title={project.priceLine}>
+                  {project.priceLine}
+                </p>
                 {project.priceSuffix && (
-                  <p className="text-xs text-muted">{project.priceSuffix}</p>
+                  <p className="truncate text-[10px] text-muted" title={project.priceSuffix}>
+                    {project.priceSuffix}
+                  </p>
                 )}
               </td>
-              <td className="px-4 py-3">
+              <td className="px-3 py-2.5">
                 <PublishedBadge published={project.published} />
               </td>
-              <td className="px-4 py-3">
+              <td className="px-3 py-2.5 text-center">
                 {project.featured ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-gold">
-                    <Star className="h-3.5 w-3.5 fill-gold" />
-                    Featured
+                  <span title="Featured" className="inline-flex">
+                    <Star className="h-4 w-4 fill-gold text-gold" aria-label="Featured" />
                   </span>
                 ) : (
                   <span className="text-muted">—</span>
                 )}
               </td>
-              <td className="px-4 py-3 text-right">
+              <td className="px-4 py-2.5 text-right">
                 <ProjectRowActions
                   projectId={project.id}
                   projectName={project.name}

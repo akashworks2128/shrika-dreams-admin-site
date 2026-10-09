@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { MoreVertical, Pencil, ExternalLink, Copy, Trash2, X } from "lucide-react";
+import { Eye, Pencil, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { deleteProjectById } from "@/lib/projects-data";
+import { getProjectImageUrls, removeStorageFilesByUrl } from "@/lib/project-images";
+
+const iconButton =
+  "flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface hover:text-navy";
 
 interface ProjectRowActionsProps {
   projectId: string;
@@ -12,45 +18,45 @@ interface ProjectRowActionsProps {
   projectSlug: string | null;
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "";
-
 export default function ProjectRowActions({
   projectId,
   projectName,
   projectSlug,
 }: ProjectRowActionsProps) {
-  const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   async function handleDelete() {
     setDeleting(true);
     setErrorMsg(null);
 
     const supabase = createClient();
-    const { error } = await supabase.from("projects").delete().eq("id", projectId);
 
-    setDeleting(false);
+    // Collect the image URLs first: once the project is gone we can no longer
+    // look them up, and we want to clean the files out of Storage too.
+    const imageUrls = await getProjectImageUrls(supabase, projectId);
 
-    if (error) {
-      setErrorMsg(error.message);
+    const result = await deleteProjectById(supabase, projectId);
+
+    if (!result.success) {
+      setDeleting(false);
+      setErrorMsg(result.error ?? "The project could not be deleted.");
       return;
     }
+
+    if (imageUrls.length > 0) {
+      const storageError = await removeStorageFilesByUrl(supabase, imageUrls);
+      if (storageError) {
+        // Project is deleted; orphaned files are harmless, so just log it.
+        console.error("[projects] storage cleanup failed:", storageError);
+      }
+    }
+
+    setDeleting(false);
 
     setConfirmOpen(false);
 
@@ -62,79 +68,72 @@ export default function ProjectRowActions({
     router.refresh();
   }
 
-  const previewUrl = projectSlug && SITE_URL ? `${SITE_URL}/projects/${projectSlug}` : null;
+  // Public project page: <site>/projects/<slug>, using the project's real slug.
+  // The public site is a separate app from this admin panel, so set
+  // NEXT_PUBLIC_SITE_URL (e.g. https://shrikadreams.com) for View to reach it.
+  // Without it we fall back to a relative path, which only works when the
+  // public site is served from the same origin as the admin.
+  const configuredSiteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
+  const siteUrl = configuredSiteUrl || (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "");
+  const previewUrl = projectSlug && siteUrl
+    ? `${siteUrl}/projects/${encodeURIComponent(projectSlug)}`
+    : null;
 
   return (
     <>
-      <div className="relative" ref={menuRef}>
+      <div className="inline-flex items-center justify-end gap-0.5">
+        {previewUrl ? (
+          <a
+            href={previewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View Project"
+            aria-label="View Project"
+            className={iconButton}
+          >
+            <Eye className="h-4 w-4" />
+          </a>
+        ) : (
+          <span
+            title="This project has no slug, so it has no public page"
+            aria-label="View Project (unavailable)"
+            className={`${iconButton} cursor-not-allowed opacity-40 hover:bg-transparent hover:text-muted`}
+          >
+            <Eye className="h-4 w-4" />
+          </span>
+        )}
+
+        <Link
+          href={`/dashboard/projects/${projectId}/edit`}
+          title="Edit Project"
+          aria-label="Edit Project"
+          className={iconButton}
+        >
+          <Pencil className="h-4 w-4" />
+        </Link>
+
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Row actions"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-surface hover:text-ink"
+          onClick={() => {
+            setErrorMsg(null);
+            setConfirmOpen(true);
+          }}
+          title="Delete Project"
+          aria-label="Delete Project"
+          className={`${iconButton} hover:bg-red-50 hover:text-red-600`}
         >
-          <MoreVertical className="h-4 w-4" />
+          <Trash2 className="h-4 w-4" />
         </button>
-
-        {open && (
-          <div className="absolute right-0 top-9 z-20 w-44 overflow-hidden rounded-lg border border-line bg-white py-1 shadow-lg">
-            <Link
-              href={`/dashboard/projects/${projectId}/edit`}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm text-ink hover:bg-surface"
-              onClick={() => setOpen(false)}
-            >
-              <Pencil className="h-3.5 w-3.5 text-muted" />
-              Edit
-            </Link>
-
-            {previewUrl ? (
-              <a
-                href={previewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2.5 px-3 py-2 text-sm text-ink hover:bg-surface"
-                onClick={() => setOpen(false)}
-              >
-                <ExternalLink className="h-3.5 w-3.5 text-muted" />
-                Preview
-              </a>
-            ) : (
-              <span className="flex cursor-not-allowed items-center gap-2.5 px-3 py-2 text-sm text-gray-300">
-                <ExternalLink className="h-3.5 w-3.5" />
-                Preview
-              </span>
-            )}
-
-            <span className="flex cursor-not-allowed items-center justify-between gap-2.5 px-3 py-2 text-sm text-gray-300">
-              <span className="flex items-center gap-2.5">
-                <Copy className="h-3.5 w-3.5" />
-                Duplicate
-              </span>
-              <span className="rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-semibold">
-                Soon
-              </span>
-            </span>
-
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                setConfirmOpen(true);
-              }}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Delete
-            </button>
-          </div>
-        )}
       </div>
 
-      {confirmOpen && (
+      {confirmOpen &&
+        createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-left shadow-xl">
             <div className="flex items-start justify-between">
-              <h3 className="text-base font-bold text-ink">Delete project?</h3>
+              <h3 className="text-base font-bold text-ink">
+                Are you sure you want to delete this project?
+              </h3>
               <button
                 type="button"
                 onClick={() => setConfirmOpen(false)}
@@ -177,7 +176,9 @@ export default function ProjectRowActions({
             </div>
           </div>
         </div>
-      )}
+          ,
+          document.body,
+        )}
     </>
   );
 }

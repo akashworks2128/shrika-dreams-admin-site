@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { Plus, X } from "lucide-react";
+import GoldSelect from "@/app/dashboard/components/form/GoldSelect";
 
 const inputBase =
   "w-full rounded-lg border bg-surface px-3 py-2.5 text-sm text-ink outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-amber-300";
@@ -106,18 +107,13 @@ export function SelectInput({
   error?: string;
 }) {
   return (
-    <select
+    <GoldSelect
       value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`${inputBase} ${inputBorder(Boolean(error))} appearance-none`}
-    >
-      <option value="">{placeholder}</option>
-      {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
+      onChange={onChange}
+      options={options}
+      placeholder={placeholder}
+      hasError={Boolean(error)}
+    />
   );
 }
 
@@ -169,13 +165,13 @@ export function ToggleSwitch({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+        className={`relative inline-block h-6 w-11 shrink-0 overflow-hidden rounded-full transition-colors ${
           checked ? "bg-gold" : "bg-line"
         }`}
       >
         <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-            checked ? "translate-x-[22px]" : "translate-x-0.5"
+          className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+            checked ? "translate-x-5" : "translate-x-0"
           }`}
         />
       </button>

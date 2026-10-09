@@ -28,7 +28,6 @@ export default function WebsiteOverview({ counts }: { counts: WebsiteOverviewCou
       <div className="mt-2 divide-y divide-line">
         <Row label="Published Projects" value={counts.publishedProjects} dotClassName="bg-gold" />
         <Row label="Draft Projects" value={counts.draftProjects} dotClassName="bg-gold-light" />
-        <Row label="Published Blogs" value={counts.publishedBlogs} dotClassName="bg-navy" />
         <Row label="New Leads Today" value={counts.newLeadsToday} dotClassName="bg-navy-dark" />
       </div>
     </div>

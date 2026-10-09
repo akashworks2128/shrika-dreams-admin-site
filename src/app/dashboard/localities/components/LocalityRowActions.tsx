@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { MoreVertical, Pencil, ExternalLink, Trash2, X } from "lucide-react";
+import { Eye, Pencil, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 interface LocalityRowActionsProps {
@@ -12,31 +13,25 @@ interface LocalityRowActionsProps {
   localitySlug: string | null;
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+const iconButton =
+  "flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface hover:text-navy";
+
+// Same rule as Projects: NEXT_PUBLIC_SITE_URL in production, localhost in dev.
+const configuredSiteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
+const SITE_URL =
+  configuredSiteUrl || (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "");
 
 export default function LocalityRowActions({
   localityId,
   localityName,
   localitySlug,
 }: LocalityRowActionsProps) {
-  const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   async function handleDelete() {
     // `deleting` guards this from firing twice (e.g. a fast double click),
@@ -70,63 +65,55 @@ export default function LocalityRowActions({
 
   return (
     <>
-      <div className="relative" ref={menuRef}>
+      <div className="inline-flex items-center justify-end gap-0.5">
+        {previewUrl ? (
+          <a
+            href={previewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View Locality"
+            aria-label="View Locality"
+            className={iconButton}
+          >
+            <Eye className="h-4 w-4" />
+          </a>
+        ) : (
+          <span
+            title="This locality has no slug, so it has no public page"
+            aria-label="View Locality (unavailable)"
+            className={`${iconButton} cursor-not-allowed opacity-40 hover:bg-transparent hover:text-muted`}
+          >
+            <Eye className="h-4 w-4" />
+          </span>
+        )}
+
+        <Link
+          href={`/dashboard/localities/${localityId}/edit`}
+          title="Edit Locality"
+          aria-label="Edit Locality"
+          className={iconButton}
+        >
+          <Pencil className="h-4 w-4" />
+        </Link>
+
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Row actions"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-surface hover:text-ink"
+          onClick={() => {
+            setErrorMsg(null);
+            setConfirmOpen(true);
+          }}
+          title="Delete Locality"
+          aria-label="Delete Locality"
+          className={`${iconButton} hover:bg-red-50 hover:text-red-600`}
         >
-          <MoreVertical className="h-4 w-4" />
+          <Trash2 className="h-4 w-4" />
         </button>
-
-        {open && (
-          <div className="absolute right-0 top-9 z-20 w-44 overflow-hidden rounded-lg border border-line bg-white py-1 shadow-lg">
-            <Link
-              href={`/dashboard/localities/${localityId}/edit`}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm text-ink hover:bg-surface"
-              onClick={() => setOpen(false)}
-            >
-              <Pencil className="h-3.5 w-3.5 text-muted" />
-              Edit
-            </Link>
-
-            {previewUrl ? (
-              <a
-                href={previewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2.5 px-3 py-2 text-sm text-ink hover:bg-surface"
-                onClick={() => setOpen(false)}
-              >
-                <ExternalLink className="h-3.5 w-3.5 text-muted" />
-                View
-              </a>
-            ) : (
-              <span className="flex cursor-not-allowed items-center gap-2.5 px-3 py-2 text-sm text-gray-300">
-                <ExternalLink className="h-3.5 w-3.5" />
-                View
-              </span>
-            )}
-
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                setConfirmOpen(true);
-              }}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Delete
-            </button>
-          </div>
-        )}
       </div>
 
-      {confirmOpen && (
+      {confirmOpen &&
+        createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-left shadow-xl">
             <div className="flex items-start justify-between">
               <h3 className="text-base font-bold text-ink">Delete locality?</h3>
               <button
@@ -171,7 +158,9 @@ export default function LocalityRowActions({
             </div>
           </div>
         </div>
-      )}
+          ,
+          document.body,
+        )}
     </>
   );
 }

@@ -15,6 +15,16 @@ export const PRICE_UNITS = ["Cr", "L"] as const;
 
 export const AREA_UNITS = ["Acres", "Guntas", "Cents", "Sq Ft"] as const;
 
+export interface ProjectConfigurationFormRow {
+  id?: string;
+  configuration: string;
+  area: string;
+  price: string;
+  priceUnit: string;
+  availability: string;
+  sortOrder: string;
+}
+
 export interface LandmarkRow {
   [key: string]: string;
   name: string;
@@ -36,7 +46,6 @@ export interface ProjectFormState {
   localityId: string;
   propertyType: PropertyTypeValue | "";
   status: string;
-  shortDescription: string;
   description: string;
 
   // Section 2 — Pricing
@@ -50,6 +59,7 @@ export interface ProjectFormState {
 
   // Section 3 — Project Overview
   projectSize: string;
+  projectSizeUnit: string;
   totalUnits: string;
   totalPlots: string;
   availableUnits: string;
@@ -90,6 +100,7 @@ export interface ProjectFormState {
   // Section 8 — Nearby & Connectivity
   nearbyLandmarks: LandmarkRow[];
   connectivity: ConnectivityRow[];
+  configurations: ProjectConfigurationFormRow[];
 
   // Section 9 — Publishing
   isFeatured: boolean;
@@ -104,7 +115,6 @@ export const INITIAL_FORM_STATE: ProjectFormState = {
   localityId: "",
   propertyType: "",
   status: "",
-  shortDescription: "",
   description: "",
 
   priceType: "Price Range",
@@ -116,6 +126,7 @@ export const INITIAL_FORM_STATE: ProjectFormState = {
   priceNote: "",
 
   projectSize: "",
+  projectSizeUnit: "Acres",
   totalUnits: "",
   totalPlots: "",
   availableUnits: "",
@@ -151,6 +162,7 @@ export const INITIAL_FORM_STATE: ProjectFormState = {
 
   nearbyLandmarks: [],
   connectivity: [],
+  configurations: [],
 
   isFeatured: false,
   sortOrder: "0",

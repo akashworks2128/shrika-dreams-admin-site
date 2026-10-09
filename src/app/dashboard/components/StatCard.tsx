@@ -5,11 +5,12 @@ interface StatCardProps {
   label: string;
   value: number;
   supportingText: string;
+  className?: string;
 }
 
-export default function StatCard({ icon: Icon, label, value, supportingText }: StatCardProps) {
+export default function StatCard({ icon: Icon, label, value, supportingText, className = "" }: StatCardProps) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-4 sm:p-5">
+    <div className={`rounded-2xl border border-line bg-white p-4 sm:p-5 ${className}`}>
       <div className="flex items-start justify-between">
         <p className="text-xs font-semibold text-muted">{label}</p>
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-light/40">

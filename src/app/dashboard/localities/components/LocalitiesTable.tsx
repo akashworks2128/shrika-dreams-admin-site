@@ -7,19 +7,19 @@ import type { LocalityListItem } from "@/lib/localities-data";
 import LocalityRowActions from "./LocalityRowActions";
 
 const STATUS_STYLES: Record<string, string> = {
-  Published: "bg-emerald-50 text-emerald-700",
-  Draft: "bg-line/70 text-muted",
+  Published: "border border-gold/25 bg-gold-light/25 text-navy",
+  Draft: "border border-line bg-surface text-muted",
 };
 
 function PublishedBadge({ published }: { published: boolean }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap ${
         published ? STATUS_STYLES.Published : STATUS_STYLES.Draft
       }`}
     >
       <span
-        className={`h-1.5 w-1.5 rounded-full ${published ? "bg-emerald-500" : "bg-gray-400"}`}
+        className={`h-1.5 w-1.5 rounded-full ${published ? "bg-gold" : "bg-gray-400"}`}
       />
       {published ? "Published" : "Draft"}
     </span>
@@ -41,7 +41,7 @@ function LocalityThumbnail({
   // allowlisted in next.config.ts. onError falls back to the placeholder
   // icon instead of breaking the row/card.
   const [failed, setFailed] = useState(false);
-  const dimensions = size === "table" ? "h-12 w-16" : "h-14 w-14";
+  const dimensions = size === "table" ? "h-10 w-14" : "h-14 w-14";
 
   if (imageUrl && !failed) {
     return (
@@ -117,20 +117,20 @@ export default function LocalitiesTable({ items, hasActiveFilters, error }: Loca
       {/* Desktop / tablet: standard table, same structure as the Projects
           page. */}
       <div className="hidden overflow-x-auto sm:block">
-        <table className="w-full min-w-[720px] border-collapse text-left">
+        <table className="w-full min-w-[720px] table-fixed border-collapse text-left">
           <thead>
             <tr className="border-b border-line text-[11px] font-bold uppercase tracking-[0.06em] text-muted">
-              <th className="px-5 py-3 font-bold">Locality</th>
-              <th className="px-4 py-3 font-bold">City</th>
-              <th className="px-4 py-3 font-bold">Projects</th>
-              <th className="px-4 py-3 font-bold">Status</th>
-              <th className="px-4 py-3 text-right font-bold">Actions</th>
+              <th className="w-[42%] px-4 py-3 font-bold">Locality</th>
+              <th className="w-[18%] px-4 py-3 font-bold">City</th>
+              <th className="w-[15%] px-4 py-3 font-bold">Projects</th>
+              <th className="w-[15%] px-4 py-3 font-bold">Status</th>
+              <th className="w-[10%] px-4 py-3 text-right font-bold">Actions</th>
             </tr>
           </thead>
           <tbody className="text-sm">
             {items.map((locality) => (
-              <tr key={locality.id} className="border-b border-line last:border-0">
-                <td className="px-5 py-3">
+              <tr key={locality.id} className="border-b border-line transition-colors last:border-0 hover:bg-surface/60">
+                <td className="px-4 py-2.5">
                   <div className="flex items-center gap-3">
                     <LocalityThumbnail imageUrl={locality.imageUrl} name={locality.name} />
                     <div className="min-w-0">
@@ -141,9 +141,9 @@ export default function LocalitiesTable({ items, hasActiveFilters, error }: Loca
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-ink whitespace-nowrap">{locality.city ?? "—"}</td>
-                <td className="px-4 py-3 text-ink whitespace-nowrap">{locality.projectCount}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-2.5 text-ink whitespace-nowrap">{locality.city ?? "—"}</td>
+                <td className="px-4 py-2.5 text-ink whitespace-nowrap">{locality.projectCount}</td>
+                <td className="px-4 py-2.5">
                   <PublishedBadge published={locality.published} />
                 </td>
                 <td className="px-4 py-3 text-right">

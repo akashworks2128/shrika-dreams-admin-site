@@ -2,7 +2,8 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Search, Menu, ArrowLeft } from "lucide-react";
+import { Menu, ArrowLeft } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useShell } from "./DashboardShell";
 
 interface DashboardHeaderProps {
@@ -22,10 +23,37 @@ export default function DashboardHeader({
 }: DashboardHeaderProps) {
   const { openMenu } = useShell();
   const initial = adminName.trim().charAt(0).toUpperCase() || "A";
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const currentY = window.scrollY;
+
+      if (currentY <= 12) {
+        setShowHeader(true);
+      } else if (currentY > lastScrollY.current + 4) {
+        setShowHeader(false);
+      } else if (currentY < lastScrollY.current - 4) {
+        setShowHeader(true);
+      }
+
+      lastScrollY.current = currentY;
+    };
+
+    lastScrollY.current = window.scrollY;
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <header className="flex flex-wrap items-start justify-between gap-4 px-4 py-5 sm:px-6 md:px-8 md:py-7">
-      <div className="flex items-start gap-3 min-w-0">
+    <header
+      className={`sticky top-0 z-40 border-b border-line bg-surface/95 px-4 py-3 backdrop-blur transition-transform duration-200 sm:px-6 sm:py-4 md:px-8 md:py-5 ${
+        showHeader ? "translate-y-0" : "-translate-y-full"
+      }`}
+    >
+      <div className="flex w-full items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
         <button
           type="button"
           onClick={openMenu}
@@ -51,27 +79,22 @@ export default function DashboardHeader({
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-        {action}
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+          <div className="hidden sm:block">{action}</div>
 
-        <button
-          type="button"
-          aria-label="Search"
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-line text-muted transition-colors hover:text-ink sm:h-10 sm:w-10"
-        >
-          <Search className="h-[18px] w-[18px]" />
-        </button>
-
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold text-sm font-bold text-white sm:h-10 sm:w-10">
-            {initial}
-          </div>
-          <div className="hidden sm:block">
-            <p className="text-sm font-semibold leading-tight text-ink">{adminName}</p>
-            <p className="text-xs leading-tight text-muted">Admin</p>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold text-sm font-bold text-white sm:h-10 sm:w-10">
+              {initial}
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-sm font-semibold leading-tight text-ink">{adminName}</p>
+              <p className="text-xs leading-tight text-muted">Admin</p>
+            </div>
           </div>
         </div>
       </div>
+
+      <div className="mt-3 w-full sm:hidden">{action}</div>
     </header>
   );
 }

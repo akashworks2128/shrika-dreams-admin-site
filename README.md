@@ -34,3 +34,14 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+## Leads development access
+
+When `DEV_AUTH_BYPASS=true`, the Leads page and lead update actions use a server-only Supabase Secret key. In Supabase Dashboard → Project Settings → API → Secret keys, create/copy a Secret key and add it locally as:
+
+```env
+SUPABASE_SECRET_KEY=sb_secret_...
+```
+
+`SUPABASE_SERVICE_ROLE_KEY` is also accepted for compatibility. Never prefix the secret with `NEXT_PUBLIC_`. Restart `npm run dev` after changing `.env.local`. The publishable key remains in `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.

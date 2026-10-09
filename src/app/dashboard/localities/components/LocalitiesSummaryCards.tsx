@@ -11,8 +11,9 @@ export default function LocalitiesSummaryCards({
   counts: LocalitySummaryCounts;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
       <StatCard
+        className="col-span-2 sm:col-span-1"
         icon={MapPin}
         label="Total Localities"
         value={counts.all}

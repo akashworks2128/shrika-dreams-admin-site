@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Search, RotateCcw, ChevronDown } from "lucide-react";
+import { Check, Search, RotateCcw } from "lucide-react";
+import GoldSelect from "@/app/dashboard/components/form/GoldSelect";
 import type { FilterOption } from "@/lib/projects-data";
 
 const PROPERTY_TYPES = ["Apartment", "Plot"] as const;
@@ -87,7 +88,7 @@ export default function FilterToolbar({
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search projects..."
-            className="w-full rounded-lg border border-line bg-surface py-2.5 pl-9 pr-3 text-sm outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-amber-300"
+            className="w-full rounded-lg border border-line bg-surface py-2.5 pl-9 pr-3 text-sm text-ink outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-amber-300"
           />
         </div>
 
@@ -120,38 +121,36 @@ export default function FilterToolbar({
         />
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-muted">Property Type:</span>
+      <div className="mt-4 flex flex-col gap-4 border-t border-line pt-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:gap-x-10">
+          <ChipGroup label="Property Type">
             {PROPERTY_TYPES.map((type) => (
-              <CheckboxPill
+              <FilterChip
                 key={type}
                 label={type}
-                checked={initialPropertyType === type}
-                onChange={() => toggleSingleValue("type", type, initialPropertyType)}
+                selected={initialPropertyType === type}
+                onClick={() => toggleSingleValue("type", type, initialPropertyType)}
               />
             ))}
-          </div>
+          </ChipGroup>
 
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-muted">Status:</span>
+          <ChipGroup label="Status">
             {STATUSES.map((status) => (
-              <CheckboxPill
+              <FilterChip
                 key={status}
                 label={status}
-                checked={initialStatus === status}
-                onChange={() => toggleSingleValue("status", status, initialStatus)}
+                selected={initialStatus === status}
+                onClick={() => toggleSingleValue("status", status, initialStatus)}
               />
             ))}
-          </div>
+          </ChipGroup>
         </div>
 
         {hasActiveFilters && (
           <button
             type="button"
             onClick={resetFilters}
-            className="flex items-center gap-1.5 text-xs font-semibold text-gold hover:underline"
+            className="flex items-center justify-center gap-1.5 self-start rounded-full border border-gold/40 px-3.5 py-1.5 text-xs font-semibold text-gold transition-colors hover:bg-gold-light/30 lg:self-center"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             Reset Filters
@@ -174,42 +173,46 @@ function FilterSelect({
   options: { value: string; label: string }[];
 }) {
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full appearance-none rounded-lg border border-line bg-surface py-2.5 pl-3 pr-8 text-sm text-ink outline-none focus:ring-2 focus:ring-amber-300"
-      >
-        <option value="">{placeholder}</option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+    <GoldSelect
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      options={options}
+    />
+  );
+}
+
+function ChipGroup({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">{label}</p>
+      <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   );
 }
 
-function CheckboxPill({
+function FilterChip({
   label,
-  checked,
-  onChange,
+  selected,
+  onClick,
 }: {
   label: string;
-  checked: boolean;
-  onChange: () => void;
+  selected: boolean;
+  onClick: () => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-1.5 text-xs text-ink">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="h-3.5 w-3.5 rounded border-line text-gold focus:ring-amber-300 accent-[#c9a24d]"
-      />
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onClick}
+      className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all ${
+        selected
+          ? "border-gold bg-gold text-white shadow-sm"
+          : "border-line bg-white text-ink hover:border-gold/60 hover:bg-gold-light/25"
+      }`}
+    >
+      {selected && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
       {label}
-    </label>
+    </button>
   );
 }
