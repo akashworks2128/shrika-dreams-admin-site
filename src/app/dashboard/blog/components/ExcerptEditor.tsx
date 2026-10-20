@@ -1,9 +1,23 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { EditorContent, useEditor, useEditorState, type Editor, type JSONContent } from "@tiptap/react";
+import {
+  EditorContent,
+  useEditor,
+  useEditorState,
+  type Editor,
+  type JSONContent,
+} from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Bold, Check, Italic, Link2, Strikethrough, Underline as UnderlineIcon, X } from "lucide-react";
+import {
+  Bold,
+  Check,
+  Italic,
+  Link2,
+  Strikethrough,
+  Underline as UnderlineIcon,
+  X,
+} from "lucide-react";
 
 interface ExcerptEditorProps {
   initial: JSONContent | null;
@@ -15,10 +29,14 @@ interface ExcerptEditorProps {
 function normalizeUrl(raw: string): string | null {
   const value = raw.trim();
   if (!value) return null;
-  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(value) ? value : `https://${value}`;
+  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(value)
+    ? value
+    : `https://${value}`;
   try {
     const url = new URL(withScheme);
-    return ["http:", "https:", "mailto:", "tel:"].includes(url.protocol) ? url.toString() : null;
+    return ["http:", "https:", "mailto:", "tel:"].includes(url.protocol)
+      ? url.toString()
+      : null;
   } catch {
     return null;
   }
@@ -44,7 +62,9 @@ function MiniButton({
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       className={`flex h-8 w-8 items-center justify-center rounded-md border transition-colors ${
-        active ? "border-gold/40 bg-gold-light/40 text-navy" : "border-transparent text-muted hover:bg-surface hover:text-navy"
+        active
+          ? "border-gold/40 bg-gold-light/40 text-navy"
+          : "border-transparent text-muted hover:bg-surface hover:text-navy"
       }`}
     >
       {children}
@@ -90,20 +110,44 @@ function ExcerptToolbar({ editor }: { editor: Editor }) {
 
   return (
     <div className="border-b border-line bg-white">
-      <div role="toolbar" aria-label="Excerpt formatting" className="flex items-center gap-0.5 px-2 py-1.5">
-        <MiniButton label="Bold" active={s.bold} onClick={() => run().toggleBold().run()}>
+      <div
+        role="toolbar"
+        aria-label="Excerpt formatting"
+        className="flex items-center gap-0.5 px-2 py-1.5"
+      >
+        <MiniButton
+          label="Bold"
+          active={s.bold}
+          onClick={() => run().toggleBold().run()}
+        >
           <Bold className={icon} />
         </MiniButton>
-        <MiniButton label="Italic" active={s.italic} onClick={() => run().toggleItalic().run()}>
+        <MiniButton
+          label="Italic"
+          active={s.italic}
+          onClick={() => run().toggleItalic().run()}
+        >
           <Italic className={icon} />
         </MiniButton>
-        <MiniButton label="Underline" active={s.underline} onClick={() => run().toggleUnderline().run()}>
+        <MiniButton
+          label="Underline"
+          active={s.underline}
+          onClick={() => run().toggleUnderline().run()}
+        >
           <UnderlineIcon className={icon} />
         </MiniButton>
-        <MiniButton label="Strikethrough" active={s.strike} onClick={() => run().toggleStrike().run()}>
+        <MiniButton
+          label="Strikethrough"
+          active={s.strike}
+          onClick={() => run().toggleStrike().run()}
+        >
           <Strikethrough className={icon} />
         </MiniButton>
-        <MiniButton label={s.link ? "Remove link" : "Add link"} active={s.link} onClick={openLink}>
+        <MiniButton
+          label={s.link ? "Remove link" : "Add link"}
+          active={s.link}
+          onClick={openLink}
+        >
           <Link2 className={icon} />
         </MiniButton>
       </div>
@@ -131,20 +175,37 @@ function ExcerptToolbar({ editor }: { editor: Editor }) {
               urlError ? "border-red-400" : "border-line"
             }`}
           />
-          <button type="button" aria-label="Apply link" onClick={applyLink} className="rounded-md p-1.5 text-gold hover:bg-white">
+          <button
+            type="button"
+            aria-label="Apply link"
+            onClick={applyLink}
+            className="rounded-md p-1.5 text-gold hover:bg-white"
+          >
             <Check className="h-4 w-4" />
           </button>
-          <button type="button" aria-label="Cancel link" onClick={() => setLinkOpen(false)} className="rounded-md p-1.5 text-muted hover:bg-white">
+          <button
+            type="button"
+            aria-label="Cancel link"
+            onClick={() => setLinkOpen(false)}
+            className="rounded-md p-1.5 text-muted hover:bg-white"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
       )}
-      {linkOpen && urlError && <p className="px-3 pb-1.5 text-[11px] text-red-600">Enter a valid http(s), mailto or tel link.</p>}
+      {linkOpen && urlError && (
+        <p className="px-3 pb-1.5 text-[11px] text-red-600">
+          Enter a valid http(s), mailto or tel link.
+        </p>
+      )}
     </div>
   );
 }
 
-export default function ExcerptEditor({ initial, onChange }: ExcerptEditorProps) {
+export default function ExcerptEditor({
+  initial,
+  onChange,
+}: ExcerptEditorProps) {
   const editor = useEditor({
     // Inline-only: paragraphs + bold/italic/underline/strike/link (StarterKit v3 includes underline and link).
     extensions: [
@@ -153,7 +214,6 @@ export default function ExcerptEditor({ initial, onChange }: ExcerptEditorProps)
         bulletList: false,
         orderedList: false,
         listItem: false,
-        listKeybindings: false,
         blockquote: false,
         codeBlock: false,
         code: false,
@@ -163,13 +223,22 @@ export default function ExcerptEditor({ initial, onChange }: ExcerptEditorProps)
     ],
     content: initial ?? "",
     immediatelyRender: false,
-    editorProps: { attributes: { class: "excerpt-prose", "aria-label": "Post excerpt" } },
+    editorProps: {
+      attributes: { class: "excerpt-prose", "aria-label": "Post excerpt" },
+    },
     onUpdate: ({ editor: e }) => onChange(e.isEmpty ? null : e.getJSON()),
   });
 
   return (
     <div className="excerpt-editor overflow-hidden rounded-lg border border-line bg-white focus-within:ring-2 focus-within:ring-amber-300">
-      {editor ? <ExcerptToolbar editor={editor} /> : <div className="h-[45px] border-b border-line bg-surface/60" aria-hidden="true" />}
+      {editor ? (
+        <ExcerptToolbar editor={editor} />
+      ) : (
+        <div
+          className="h-[45px] border-b border-line bg-surface/60"
+          aria-hidden="true"
+        />
+      )}
       <EditorContent editor={editor} />
     </div>
   );
