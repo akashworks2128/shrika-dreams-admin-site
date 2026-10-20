@@ -24,7 +24,7 @@ export function validateContentImageFile(file: File): string | null {
 
 export async function uploadContentImage(
   supabase: SupabaseClient,
-  entityType: "localities" | "builders",
+  entityType: "localities" | "builders" | "blog",
   entityId: string,
   field: string,
   file: File,
